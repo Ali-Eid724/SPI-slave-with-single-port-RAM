@@ -1,0 +1,66 @@
+module Spi_RAM
+
+( din , rx_valid, dout, tx_valid, clk, reset);
+parameter MEM_depth = 256;
+parameter ADDR_size = 8;
+
+//declaring inputs
+
+input [9:0] din;  // carry the data that will be used by RAM
+input rx_valid;   // flag used to make sure that din is ready to be used
+input clk;
+input reset;      // SYC reset
+
+
+//declaring outputs
+
+output reg [7:0] dout; // data sent to SPI salve
+output reg tx_valid;   // Flag for indicate to slave that data stores to ram
+
+//decalring memory
+reg [ADDR_size-1:0] addr;   // internal address for RAM
+reg [7:0] MEM [0:MEM_depth-1]; // memory declaration
+
+//logic
+always@(posedge clk)
+       begin
+           if(~reset)
+              begin
+                     dout <= 0;
+                     tx_valid <= 0;
+              end
+           else
+              begin
+                     if(rx_valid)
+                        begin
+                              case(din[9:8])
+                                  
+                                    2'b00:  //write address
+                                       begin
+                                          addr <= din[7:0];
+                                          tx_valid <= 0;
+                                       end
+                                    2'b01:   // write data
+                                       begin
+                                          MEM[addr] <= din[7:0];
+                                          tx_valid <= 0;
+                                       end
+
+                                    2'b10:   // read address
+                                       begin
+                                           addr <= din[7:0];
+                                           tx_valid <= 0;
+                                
+                                       end
+
+                                    2'b11:   // read data
+                                       begin
+                                            dout <= MEM[addr];
+                                            tx_valid <= 1;
+                                       end
+                                  
+                              endcase
+                        end
+              end
+       end
+endmodule
