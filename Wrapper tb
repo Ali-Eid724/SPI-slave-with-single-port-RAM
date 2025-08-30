@@ -1,0 +1,133 @@
+module SPI_wrapper_tb();
+reg MOSI,SS_n,SCK,reset;
+wire MISO;
+SPI_final DUT( MOSI, MISO, SS_n, SCK,reset);
+
+
+initial begin
+    clk = 0;
+     forever 
+       begin
+        #10 clk = ~clk;
+       end
+end
+initial begin
+        reset=0;
+        repeat(2)
+        @(negedge SCK);
+        reset=1;
+        SS_n=1;
+        repeat(2)
+        @(negedge SCK);
+        SS_n=0;
+        MOSI=0;
+        repeat(2)
+        @(negedge SCK);
+        MOSI=0;
+        @(negedge SCK);
+        MOSI=0;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        SS_n=1;
+    repeat(2)
+        @(negedge SCK);
+        SS_n=0;
+        MOSI=0;
+        repeat(2)
+        @(negedge SCK);
+        MOSI=0;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=0;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=0;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=0;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=0;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        SS_n=1;
+    repeat(2)
+        @(negedge SCK);
+        SS_n=0;
+        MOSI=1;
+        repeat(2)
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=0;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        SS_n=1;
+    repeat(2)
+        @(negedge SCK);
+        SS_n=0;
+        MOSI=1;
+        repeat(2)
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=0;
+        @(negedge SCK);
+        MOSI=0;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=0;
+        @(negedge SCK);
+        MOSI=1;
+        @(negedge SCK);
+        MOSI=1;
+        repeat(9)
+        @(negedge SCK);
+        SS_n=1;
+         repeat(3)
+        @(negedge SCK);
+    $stop;
+    end
+endmodule
