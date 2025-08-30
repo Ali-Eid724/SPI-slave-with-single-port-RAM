@@ -1,0 +1,157 @@
+module spi_slave ( MOSI, MISO, SS_n, clk, reset, rx_data, rx_valid, tx_data, tx_valid);
+
+//declaring inputs
+
+input clk;
+input reset;
+input SS_n; //enable for slave
+input tx_valid;
+input [7:0] tx_data;
+input MOSI;
+/*******************************/
+//declaring output
+output reg rx_valid;
+output reg [9:0] rx_data;
+output reg MISO;
+/*******************************/
+//FSM
+parameter IDLE = 0, CHK_CMD = 1, WRITE = 2, READ_DATA = 3, READ_ADD = 4; //states
+
+reg [2:0] state,NEXT_state; // Logic for FSM
+reg  ADD_or_Data;
+reg [4:0] counter;
+reg updown;
+
+
+
+
+
+// state register
+
+always@(posedge clk)
+     begin
+        if(~reset)
+          begin
+            state <= IDLE;
+            NEXT_state <= IDLE;
+          end
+        else 
+          begin
+            state <= NEXT_state;
+          end
+     end
+/***************************************/
+//next state logic
+
+always@(*)
+     begin
+        case(state)
+           IDLE: 
+             begin
+                if(SS_n ==1)
+                  NEXT_state <= IDLE;
+                else
+                  NEXT_state <= CHK_CMD;
+             end
+            CHK_CMD:
+             begin
+                if(SS_n == 0)
+                  NEXT_state <= IDLE;
+                else if(SS_n == 0 && MOSI == 0)
+                  NEXT_state <= WRITE;
+                else if(SS_n == 0 && MOSI == 1 && ADD_or_Data == 0 )
+                  NEXT_state <= READ_ADD;
+                else if(SS_n == 0 && MOSI == 1 && ADD_or_Data == 1 )
+                  NEXT_state <= READ_DATA; 
+             end
+            WRITE:
+             begin
+                if(SS_n == 1)
+                  NEXT_state <= IDLE;
+                else
+                  NEXT_state <= WRITE;
+             end
+            READ_DATA:
+             begin
+                if(SS_n == 1)
+                  NEXT_state <= IDLE;
+                else
+                  NEXT_state <= READ_DATA;
+             end
+            READ_ADD:
+             begin
+                if(SS_n == 1)
+                  NEXT_state <= IDLE;
+                else 
+                  NEXT_state <= READ_ADD;
+             end
+        endcase
+     end
+/**************************************/
+// output logic
+always@(posedge clk)
+  begin
+    if(~reset) begin
+        rx_valid <= 0;
+        counter <= 0;
+        updown <= 0;
+        rx_data <= 0;
+        ADD_or_Data <= 0;
+        MISO <= 0;
+    end
+    else begin
+        if(~updown) begin
+            counter <= counter+1;
+        end
+        else begin
+            counter <= counter+1;
+        case(state)
+        WRITE:begin
+            updown <= 0;
+            MISO <= 0;
+            if(counter == 9) begin
+                counter <= 0;
+                rx_valid <=1;
+            end
+            else
+            rx_valid <= 0;
+            rx_data <= {rx_data[8:0],MOSI};
+            end
+        READ_ADD:begin
+            updown <= 0;
+            MISO <= 0;
+            if(counter == 9) begin
+                counter <= 0;
+                rx_valid <= 0;
+            end
+            else 
+            rx_valid <= 0;
+            rx_data <= {rx_data[8:0],MOSI};
+            end
+        READ_DATA:begin
+            if(counter == 9 && (~updown)) begin
+                rx_valid <= 0;
+                rx_data <= {rx_data[8:0],MOSI};
+            end
+            if(counter == 9)begin
+                counter <= 8;
+                rx_valid <= 1;
+                updown <= 1;
+            end
+            if(rx_valid && tx_valid)
+                MISO <= tx_data[counter];
+            end
+            default: begin
+                rx_valid <= 0;
+                rx_data <= 0;
+                counter <= 0;
+                MISO <= 0;
+                updown <= 0;
+            end
+        endcase
+        end
+        end
+  end
+
+    
+endmodule
